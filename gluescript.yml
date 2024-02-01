@@ -1,0 +1,29 @@
+import sys
+import boto3
+
+source_bucket = "vinayone"
+target_bucket = "vinaytwo"
+
+source_prefix = "raw/"
+target_prefix = "final/"
+
+# Create an S3 client using boto3
+s3_client = boto3.client('s3')
+
+# List objects in the source folder
+objects = s3_client.list_objects(Bucket=source_bucket, Prefix=source_prefix)
+
+# Iterate through objects and copy them to the destination folder
+for obj in objects.get('Contents', []):
+    source_key = obj['Key']
+    target_key = source_key.replace(source_prefix, target_prefix)
+
+    # Copy object from source to destination
+    s3_client.copy_object(
+        Bucket=target_bucket,
+        CopySource={'Bucket': source_bucket, 'Key': source_key},
+        Key=target_key
+    )
+
+    # Optionally, delete the source object if needed
+    # s3_client.delete_object(Bucket=source_bucket, Key=source_key)
